@@ -1,0 +1,64 @@
+spring:
+  r2dbc:
+    url: r2dbc:${DATABASE_URL}?sslMode=require&ssl=true
+    pool:
+      initial-size: 10
+      max-size: 50
+      max-idle-time: 30m
+    properties:
+      ssl: true
+      sslMode: require
+      sslRootCert: false
+  
+  data:
+    redis:
+      host: ec2-3-221-18-61.compute-1.amazonaws.com
+      port: 31480
+      password: p7bfc323da351a0b2f83af32880d1357003d3049198b705845d3615bb1ee7004c
+      connect-timeout: 60000
+      client-name: r2-web-flux
+
+  main:
+    allow-bean-definition-overriding: true  # 빈 오버라이딩을 허용하는 방법이지만, 위의 통합 방식을 추천합니다
+
+# OpenAPI (Swagger) Configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    operations-sorter: method
+    try-it-out-enabled: true
+    supported-submit-methods:
+      - get
+      - post
+      - put
+      - delete
+    request-snippets-enabled: true
+    response-content-type: text/event-stream  # SSE 지원 추가
+    urls:
+      - url: /v3/api-docs
+        name: R2DBC Account API
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    root: INFO
+    com.gomin.r2webflux: DEBUG
+    org.springframework:
+      jpa: DEBUG
+      data.redis: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.r2dbc: DEBUG
+    io.r2dbc.postgresql: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
+    io.r2dbc.postgresql.PARAM: DEBUG
+
+server:
+  port: 8080
