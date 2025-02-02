@@ -61,6 +61,40 @@ public class AccountController {
     @Operation(summary = "Update account Field", description = """
             Update account with Server-Sent Events stream for status updates.
 
+            Frontend Implementation Guide:
+            ```javascript
+            const sfid = '001xx000003DGb0AAG';
+            const eventSource = new EventSource(`/api/v1/accounts/sfid/${sfid}`);
+            
+            eventSource.addEventListener('STARTED', (event) => {
+                const data = JSON.parse(event.data);
+                console.log('Update started:', data);
+            });
+            
+            eventSource.addEventListener('PENDING', (event) => {
+                const data = JSON.parse(event.data);
+                console.log('Update pending:', data);
+            });
+            
+            eventSource.addEventListener('SYNCED', (event) => {
+                const data = JSON.parse(event.data);
+                console.log('Update completed:', data);
+                eventSource.close();
+            });
+            
+            eventSource.addEventListener('FAILED', (event) => {
+                const data = JSON.parse(event.data);
+                console.error('Update failed:', data);
+                eventSource.close();
+            });
+            
+            // Error handling
+            eventSource.onerror = (error) => {
+                console.error('SSE Error:', error);
+                eventSource.close();
+            };
+            ```
+
             Example curl command:
             ```
             curl -N -H "Accept:text/event-stream"
@@ -137,11 +171,107 @@ public class AccountController {
     @Operation(summary = "Create new account", description = """
             Creates a new account with Server-Sent Events stream for status updates.
 
-            Example curl command:
+            Implementation Options:
+
+            1. EventSource (Standard):
+            ```javascript
+            const eventSource = new EventSource('/api/v1/accounts');
+            // ...existing EventSource implementation...
             ```
-            curl -N -H "Accept:text/event-stream"
-                 -H "Content-Type:application/json"
-                 -d '{"name":"Test Account","type":"Customer"}'
+
+            2. Fetch API:
+            ```javascript
+            const response = await fetch('/api/v1/accounts', {
+                headers: { 'Accept': 'text/event-stream' }
+            });
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            
+            while (true) {
+                const {value, done} = await reader.read();
+                if (done) break;
+                
+                const chunks = decoder.decode(value).split('\\n\\n');
+                chunks.forEach(chunk => {
+                    if (chunk) {
+                        const [eventLine, dataLine] = chunk.split('\\n');
+                        const event = eventLine.replace('event:', '');
+                        const data = JSON.parse(dataLine.replace('data:', ''));
+                        
+                        switch(event) {
+                            case 'STARTED':
+                                console.log('Creation started:', data);
+                                break;
+                            case 'SYNCED':
+                                console.log('Synced:', data);
+                                break;
+                            // ... handle other events
+                        }
+                    }
+                });
+            }
+            ```
+
+            3. RxJS (Observable):
+            ```typescript
+            import { fromEvent } from 'rxjs';
+            import { map, takeUntil, filter } from 'rxjs/operators';
+
+            const sse$ = new EventSource('/api/v1/accounts');
+            
+            // Handle specific events
+            const started$ = fromEvent(sse$, 'STARTED').pipe(
+                map((event: MessageEvent) => JSON.parse(event.data))
+            );
+            
+            const synced$ = fromEvent(sse$, 'SYNCED').pipe(
+                map((event: MessageEvent) => JSON.parse(event.data))
+            );
+            
+            // Subscribe to events
+            started$.subscribe(data => console.log('Started:', data));
+            synced$.subscribe(data => {
+                console.log('Synced:', data);
+                sse$.close();
+            });
+            
+            // Error handling
+            fromEvent(sse$, 'error').subscribe(error => {
+                console.error('SSE Error:', error);
+                sse$.close();
+            });
+            ```
+
+            4. Axios SSE (with event-source-polyfill):
+            ```javascript
+            import EventSourcePolyfill from 'event-source-polyfill';
+            import axios from 'axios';
+
+            const eventSource = new EventSourcePolyfill('/api/v1/accounts', {
+                headers: {
+                    'Authorization': 'Bearer ' + token // if needed
+                }
+            });
+
+            // Event handlers
+            const handlers = {
+                STARTED: (data) => console.log('Started:', data),
+                SYNCED: (data) => {
+                    console.log('Synced:', data);
+                    eventSource.close();
+                }
+            };
+
+            Object.entries(handlers).forEach(([event, handler]) => {
+                eventSource.addEventListener(event, (e) => handler(JSON.parse(e.data)));
+            });
+            ```
+
+            Example curl command:
+            ```bash
+            curl -N -H "Accept:text/event-stream" \\
+                 -H "Content-Type:application/json" \\
+                 -d '{"name":"Test Account","type":"Customer"}' \\
                  http://localhost:8080/api/v1/accounts
             ```
 
