@@ -64,50 +64,15 @@ public class AccountController {
             Frontend Implementation Guide:
             ```javascript
             const sfid = '001xx000003DGb0AAG';
-            const eventSource = new EventSource(`/api/v1/accounts/sfid/${sfid}`);
+            const eventSource = new EventSource('/api/v1/accounts/sfid/' + sfid);  // 템플릿 리터럴 대신 문자열 연결 사용
             
             eventSource.addEventListener('STARTED', (event) => {
                 const data = JSON.parse(event.data);
                 console.log('Update started:', data);
             });
-            
-            eventSource.addEventListener('PENDING', (event) => {
-                const data = JSON.parse(event.data);
-                console.log('Update pending:', data);
-            });
-            
-            eventSource.addEventListener('SYNCED', (event) => {
-                const data = JSON.parse(event.data);
-                console.log('Update completed:', data);
-                eventSource.close();
-            });
-            
-            eventSource.addEventListener('FAILED', (event) => {
-                const data = JSON.parse(event.data);
-                console.error('Update failed:', data);
-                eventSource.close();
-            });
-            
-            // Error handling
-            eventSource.onerror = (error) => {
-                console.error('SSE Error:', error);
-                eventSource.close();
-            };
+            // ...existing code...
             ```
-
-            Example curl command:
-            ```
-            curl -N -H "Accept:text/event-stream"
-                 -H "Content-Type:application/json"
-                 -d '{"sfid": "001xx000003DGb0AAG" , "name":"Test Account","type":"Customer"}'
-                 http://localhost:8080/api/v1/accounts
-            ```
-
-            Stream events:
-            - STARTED: Initial creation started
-            - PENDING: Waiting for Update
-            - SYNCED: Successfully synced with Salesforce
-            - FAILED: Sync failed
+            // ...existing code...
             """, responses = {
             @ApiResponse(responseCode = "200", description = "SSE stream started", content = @Content(mediaType = MediaType.TEXT_EVENT_STREAM_VALUE, schema = @Schema(implementation = ServerSentEvent.class), examples = @ExampleObject(value = """
                     event:STARTED

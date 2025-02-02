@@ -29,21 +29,18 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
-    config-url: /v3/api-docs/swagger-config
-    operations-sorter: method
-    try-it-out-enabled: true
-    supported-submit-methods:
-      - get
-      - post
-      - put
-      - delete
-    request-snippets-enabled: true
-    response-content-type: text/event-stream  # SSE 지원 추가
-    urls:
-      - url: /v3/api-docs
-        name: R2DBC Account API
-  default-produces-media-type: application/json
-  default-consumes-media-type: application/json
+    disable-swagger-default-url: true
+    url: /v3/api-docs
+    theme: material  # 현대적인 Material 테마 사용
+    doc-expansion: list  # 문서를 list 형태로 표시
+    default-models-expand-depth: 1
+    syntax-highlight:
+      theme: nord  # 현대적인 Nord 테마의 코드 하이라이팅
+    filter: true  # 검색 필터 활성화
+    operations-sorter: alpha  # 알파벳 순 정렬
+    tags-sorter: alpha  # 태그 알파벳 순 정렬
+    display-operation-id: false
+    default-model-rendering: model
 
 logging:
   pattern:

@@ -7,15 +7,15 @@ r2-web-flux/
 │   └── filelist.md
 ├── Procfile
 ├── pom.xml
+├── system.properties
 └── src/
     ├── main/
     │   ├── java/com/gomin/r2webflux/
     │   │   ├── R2WebFluxApplication.java
     │   │   ├── config/
     │   │   │   ├── DatabaseConfig.java
-    │   │   │   ├── JdbcConfig.java
-    │   │   │   ├── SwaggerConfig.java
-    │   │   │   └── StateMachineConfig.java
+    │   │   │   ├── StateMachineConfig.java
+    │   │   │   └── SwaggerConfig.java
     │   │   ├── controller/
     │   │   │   └── AccountController.java
     │   │   ├── domain/
@@ -23,13 +23,15 @@ r2-web-flux/
     │   │   ├── event/
     │   │   │   ├── AccountEvent.java
     │   │   │   └── AccountEventListener.java
+    │   │   ├── model/
+    │   │   │   ├── AccountCreationResponse.java
+    │   │   │   └── AccountUpdateResponse.java
     │   │   ├── repository/
     │   │   │   └── AccountRepository.java
     │   │   ├── service/
     │   │   │   └── AccountService.java
     │   │   └── state/
-    │   │   │   ├── AccountState.java
-    │   │   │   └── AccountStateHandler.java
+    │   │       └── AccountState.java
     │   └── resources/
     │       ├── application.yml
     │       ├── config/
