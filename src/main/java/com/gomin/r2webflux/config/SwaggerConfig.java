@@ -19,7 +19,7 @@ public class SwaggerConfig {
                         .version("v1.0")
                         .contact(new Contact()
                                 .name("Gomin")
-                                .email("your.email@example.com")));
+                                .email("gomin@icanman.co.kr")));
     }
     
     @Bean
