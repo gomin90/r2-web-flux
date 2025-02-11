@@ -1,6 +1,7 @@
 package com.gomin.r2webflux.security;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -9,24 +10,22 @@ import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
 
 @Slf4j
 @Component
 public class JwtTokenProvider {
 
-    private Key key;
+    private SecretKey key;
     private int jwtExpiration;
 
     @Value("${jwt.secret}")
     public void setJwtSecret(String secret) {
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        this.key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
-        log.info("JWT Secret key has been set with length: {}", keyBytes.length);
+        // HMAC-SHA 알고리즘에 적합한 키 생성
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        log.info("JWT Secret key has been set");
     }
 
     @Value("${jwt.expiration:86400000}")
@@ -40,15 +39,17 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         try {
-            return Jwts.builder()
+            String token = Jwts.builder()
                     .setSubject(oauthToken.getName())
                     .setIssuedAt(now)
                     .setExpiration(expiryDate)
-                    .signWith(key, SignatureAlgorithm.HS256)  // HS512에서 HS256으로 변경
+                    .signWith(key)  // 알고리즘 자동 선택
                     .compact();
+            log.info("Generated JWT token for user: {}", oauthToken.getName());
+            return token;
         } catch (Exception e) {
-            log.error("Token generation failed: ", e);
-            throw e;
+            log.error("Token generation failed: {}", e.getMessage());
+            throw new RuntimeException("Could not generate token", e);
         }
     }
 

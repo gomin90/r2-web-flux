@@ -72,5 +72,5 @@ server:
   port: ${PORT:8080}  # Use PORT environment variable, fallback to 8080 if not set
 
 jwt:
-  secret: ${JWT_SECRET_KEY}  # 기본값 설정
+  secret: ${JWT_SECRET_KEY:your_jwt_secret_key_must_be_at_least_32_bytes_long}
   expiration: ${JWT_EXPIRATION:86400000}  # 24hours, 기본값 추가
