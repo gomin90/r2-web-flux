@@ -2,7 +2,6 @@ package com.gomin.r2webflux.config;
 
 import com.gomin.r2webflux.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,12 +21,6 @@ public class SecurityConfig {
     
     private final JwtTokenProvider jwtTokenProvider;
     private static final String SWAGGER_UI_PATH = "/swagger-ui.html";
-    
-    @Value("${app.frontend.success-url}")
-    private String successUrl;
-    
-    @Value("${app.frontend.failure-url}")
-    private String failureUrl;
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
@@ -42,7 +35,6 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .authenticationSuccessHandler((webFilterExchange, authentication) -> {
                             ServerWebExchange exchange = webFilterExchange.getExchange();
-                            // JWT 토큰 생성 및 쿠키 설정
                             return jwtTokenProvider.onAuthenticationSuccess(webFilterExchange, authentication)
                                     .then(Mono.fromRunnable(() -> {
                                         exchange.getResponse().getHeaders()
