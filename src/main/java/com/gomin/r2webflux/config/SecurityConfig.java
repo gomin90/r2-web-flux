@@ -4,16 +4,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.web.server.DefaultServerRedirectStrategy;
+import org.springframework.security.web.server.ServerRedirectStrategy;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import reactor.core.publisher.Mono;
+import java.net.URI;
 
 @Configuration
 @EnableWebFluxSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    
+    private final ServerRedirectStrategy redirectStrategy = new DefaultServerRedirectStrategy();
     
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
@@ -33,12 +38,10 @@ public class SecurityConfig {
                         })
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint((exchange, ex) -> {
-                            ServerHttpResponse response = exchange.getResponse();
-                            response.setStatusCode(HttpStatus.UNAUTHORIZED);
-                            return response.writeWith(Mono.just(response.bufferFactory()
-                                    .wrap("Please login with GitHub".getBytes())));
-                        })
+                        .authenticationEntryPoint((exchange, ex) -> 
+                            redirectStrategy.sendRedirect(exchange, 
+                                URI.create("/oauth2/authorization/github"))
+                        )
                 )
                 .build();
     }
