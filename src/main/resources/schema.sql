@@ -108,18 +108,43 @@ CREATE TABLE salesforce.account (
 	slaserialnumber__c varchar(10) NULL,
 	dunsnumber varchar(9) NULL,
 	sfid varchar(18) NULL COLLATE "ucs_basic",
-	id serial4 NOT NULL,
+	id bigserial NOT NULL,
 	"_hc_lastop" varchar(32) NULL,
 	"_hc_err" text NULL,
+	account_number varchar(255) NULL,
+	annual_revenue float8 NULL,
+	billing_city varchar(255) NULL,
+	billing_country varchar(255) NULL,
+	billing_geocode_accuracy varchar(255) NULL,
+	billing_latitude float8 NULL,
+	billing_longitude float8 NULL,
+	billing_postal_code varchar(255) NULL,
+	billing_state varchar(255) NULL,
+	billing_street varchar(255) NULL,
+	created_by_id varchar(255) NULL,
+	created_date timestamp(6) NULL,
+	first_name varchar(255) NULL,
+	is_deleted bool NULL,
+	is_person_account bool NULL,
+	last_modified_by_id varchar(255) NULL,
+	last_modified_date timestamp(6) NULL,
+	last_name varchar(255) NULL,
+	last_referenced_date timestamp(6) NULL,
+	last_viewed_date timestamp(6) NULL,
+	number_of_employees int4 NULL,
+	owner_id varchar(255) NULL,
+	person_birthdate date NULL,
+	person_contact_id varchar(255) NULL,
+	person_email varchar(255) NULL,
+	person_mobile_phone varchar(255) NULL,
+	person_title varchar(255) NULL,
+	photo_url varchar(255) NULL,
+	system_modstamp timestamp(6) NULL,
 	CONSTRAINT account_pkey PRIMARY KEY (id)
 );
 CREATE INDEX hc_idx_account_lastmodifieddate ON salesforce.account USING btree (lastmodifieddate);
 CREATE INDEX hc_idx_account_systemmodstamp ON salesforce.account USING btree (systemmodstamp);
 CREATE UNIQUE INDEX hcu_idx_account_sfid ON salesforce.account USING btree (sfid);
-
--- Add state column to account table
-ALTER TABLE salesforce.account 
-ADD COLUMN IF NOT EXISTS state varchar(50);
 
 -- Table Triggers
 
