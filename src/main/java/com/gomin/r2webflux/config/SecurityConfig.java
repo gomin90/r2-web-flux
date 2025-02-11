@@ -33,7 +33,8 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .authenticationSuccessHandler((webFilterExchange, authentication) -> {
                             ServerHttpResponse response = webFilterExchange.getExchange().getResponse();
-                            response.setStatusCode(HttpStatus.OK);
+                            response.getHeaders().setLocation(URI.create("https://r2-web-flux-8a261ca95b28.herokuapp.com"));
+                            response.setStatusCode(HttpStatus.TEMPORARY_REDIRECT);
                             return Mono.empty();
                         })
                 )
