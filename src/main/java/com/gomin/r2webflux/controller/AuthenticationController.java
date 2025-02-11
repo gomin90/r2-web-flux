@@ -1,6 +1,8 @@
 package com.gomin.r2webflux.controller;
 
-import com.gomin.r2webflux.security.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Authentication management API")
 public class AuthenticationController {
 
-    private final JwtTokenProvider jwtTokenProvider;
-
+    @Operation(
+        summary = "Get user information",
+        description = "Retrieves authenticated user information",
+        security = { @SecurityRequirement(name = "bearer-jwt") }
+    )
     @GetMapping("/user")
     public Mono<ResponseEntity<Map<String, Object>>> getUser(@AuthenticationPrincipal OAuth2User principal) {
         Map<String, Object> response = new HashMap<>();
@@ -31,6 +37,11 @@ public class AuthenticationController {
         return Mono.just(new ResponseEntity<>(response, HttpStatus.OK));
     }
 
+    @Operation(
+        summary = "Login success callback",
+        description = "Handles successful OAuth2 login",
+        security = { @SecurityRequirement(name = "oauth2") }
+    )
     @GetMapping("/login/success")
     public Mono<ResponseEntity<Map<String, String>>> loginSuccess(@AuthenticationPrincipal OAuth2User principal) {
         Map<String, String> response = new HashMap<>();
