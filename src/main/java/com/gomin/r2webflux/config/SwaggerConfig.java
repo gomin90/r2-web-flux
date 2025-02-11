@@ -4,7 +4,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,39 +22,26 @@ public class SwaggerConfig {
                         .name("Gomin")
                         .email("gomin@icanman.co.kr"));
 
+        // SecuritySchemes 설정 추가
+        Components components = new Components()
+                .addSecuritySchemes("bearer-jwt", new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"))
+                .addSecuritySchemes("oauth2", new SecurityScheme()
+                        .type(SecurityScheme.Type.OAUTH2)
+                        .scheme("oauth2"));
+
         return new OpenAPI()
                 .info(info)
-                .components(new Components());
+                .components(components);
     }
     
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public-api")
-                .pathsToMatch("/api/**")
-                .addOpenApiCustomizer(openApi -> {
-                    // Operation level customization
-                    openApi.getPaths().values().forEach(pathItem -> {
-                        if (pathItem.getGet() != null) {
-                            customizeOperation(pathItem.getGet());
-                        }
-                        if (pathItem.getPost() != null) {
-                            customizeOperation(pathItem.getPost());
-                        }
-                        if (pathItem.getPut() != null) {
-                            customizeOperation(pathItem.getPut());
-                        }
-                        if (pathItem.getDelete() != null) {
-                            customizeOperation(pathItem.getDelete());
-                        }
-                    });
-                })
+                .pathsToMatch("/api/**", "/auth/**")  // auth 경로 추가
                 .build();
-    }
-
-    private void customizeOperation(Operation operation) {
-        if (operation.getTags() == null) {
-            operation.addTagsItem("Account API");
-        }
     }
 }
