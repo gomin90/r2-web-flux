@@ -8,19 +8,25 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
+import java.util.Base64;
 import java.util.Date;
+
+import javax.crypto.spec.SecretKeySpec;
+import java.security.Key;
 
 @Slf4j
 @Component
 public class JwtTokenProvider {
 
-    private String jwtSecret;
+    private Key key;
     private int jwtExpiration;
-    
+
     @Value("${jwt.secret}")
     public void setJwtSecret(String secret) {
-        this.jwtSecret = secret;
+        // Base64로 인코딩된 키를 바이트 배열로 변환
+        byte[] decodedKey = Base64.getDecoder().decode(secret);
+        // HS512 알고리즘용 시크릿 키 생성
+        this.key = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS512.getJcaName());
         log.info("JWT Secret key has been set");
     }
 
@@ -40,26 +46,21 @@ public class JwtTokenProvider {
                 .setSubject(oauthToken.getName())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
             return true;
-        } catch (SignatureException ex) {
-            log.error("Invalid JWT signature");
-        } catch (MalformedJwtException ex) {
-            log.error("Invalid JWT token");
-        } catch (ExpiredJwtException ex) {
-            log.error("Expired JWT token");
-        } catch (UnsupportedJwtException ex) {
-            log.error("Unsupported JWT token");
-        } catch (IllegalArgumentException ex) {
-            log.error("JWT claims string is empty");
+        } catch (SecurityException | MalformedJwtException | ExpiredJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
+            log.error("JWT validation failed: {}", ex.getMessage());
+            return false;
         }
-        return false;
     }
 
     public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
