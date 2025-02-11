@@ -8,11 +8,12 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import java.util.Base64;
-import java.util.Date;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Base64;
+import java.util.Date;
 
 @Slf4j
 @Component
@@ -23,31 +24,32 @@ public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
     public void setJwtSecret(String secret) {
-        // Base64로 인코딩된 키를 바이트 배열로 변환
-        byte[] decodedKey = Base64.getDecoder().decode(secret);
-        // HS512 알고리즘용 시크릿 키 생성
-        this.key = new SecretKeySpec(decodedKey, SignatureAlgorithm.HS512.getJcaName());
-        log.info("JWT Secret key has been set");
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        this.key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
+        log.info("JWT Secret key has been set with length: {}", keyBytes.length);
     }
 
     @Value("${jwt.expiration:86400000}")
     public void setJwtExpiration(int expiration) {
         this.jwtExpiration = expiration;
-        log.info("JWT expiration has been set to: {} ms", expiration);
     }
 
     public String generateToken(Authentication authentication) {
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-        
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
-        return Jwts.builder()
-                .setSubject(oauthToken.getName())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
+        try {
+            return Jwts.builder()
+                    .setSubject(oauthToken.getName())
+                    .setIssuedAt(now)
+                    .setExpiration(expiryDate)
+                    .signWith(key, SignatureAlgorithm.HS256)  // HS512에서 HS256으로 변경
+                    .compact();
+        } catch (Exception e) {
+            log.error("Token generation failed: ", e);
+            throw e;
+        }
     }
 
     public boolean validateToken(String token) {
