@@ -15,8 +15,13 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
     private String jwtSecret;
+    
+    @Value("${jwt.secret}")  // 기본값 설정
+    public void setJwtSecret(String secret) {
+        this.jwtSecret = secret;
+        log.info("JWT Secret key has been set");  // 설정 확인용 로그
+    }
 
     @Value("${jwt.expiration}")
     private int jwtExpiration;
