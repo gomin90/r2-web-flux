@@ -21,6 +21,17 @@ spring:
   main:
     allow-bean-definition-overriding: true  # 빈 오버라이딩을 허용하는 방법이지만, 위의 통합 방식을 추천합니다
 
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope:
+              - user:email
+              - read:user
+
 # OpenAPI (Swagger) Configuration
 springdoc:
   api-docs:
@@ -59,3 +70,7 @@ logging:
 
 server:
   port: ${PORT:8080}  # Use PORT environment variable, fallback to 8080 if not set
+
+jwt:
+  secret: ${JWT_SECRET_KEY}  # 기본값 설정
+  expiration: ${JWT_EXPIRATION:86400000}  # 24hours, 기본값 추가

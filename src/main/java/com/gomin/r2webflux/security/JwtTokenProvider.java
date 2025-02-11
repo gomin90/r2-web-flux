@@ -16,15 +16,19 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     private String jwtSecret;
+    private int jwtExpiration;
     
-    @Value("${jwt.secret}")  // 기본값 설정
+    @Value("${jwt.secret}")
     public void setJwtSecret(String secret) {
         this.jwtSecret = secret;
-        log.info("JWT Secret key has been set");  // 설정 확인용 로그
+        log.info("JWT Secret key has been set");
     }
 
-    @Value("${jwt.expiration}")
-    private int jwtExpiration;
+    @Value("${jwt.expiration:86400000}")
+    public void setJwtExpiration(int expiration) {
+        this.jwtExpiration = expiration;
+        log.info("JWT expiration has been set to: {} ms", expiration);
+    }
 
     public String generateToken(Authentication authentication) {
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
