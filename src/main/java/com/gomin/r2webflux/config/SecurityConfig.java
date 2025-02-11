@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import reactor.core.publisher.Mono;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -28,6 +29,16 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .authenticationSuccessHandler(jwtTokenProvider::onAuthenticationSuccess)
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessHandler((exchange, authentication) -> 
+                            exchange.getExchange().getSession()
+                                .flatMap(session -> {
+                                    session.invalidate();
+                                    return Mono.empty();
+                                })
+                        )
                 )
                 .build();
     }
