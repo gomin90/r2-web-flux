@@ -1,14 +1,10 @@
 spring:
   r2dbc:
-    url: r2dbc:${DATABASE_URL}?sslMode=require&ssl=true
+    url: r2dbc:${DATABASE_URL}?sslMode=require
     pool:
       initial-size: 10
       max-size: 50
       max-idle-time: 30m
-    properties:
-      ssl: true
-      sslMode: require
-      sslRootCert: false
   
   data:
     redis:
@@ -19,7 +15,7 @@ spring:
       client-name: r2-web-flux
 
   main:
-    allow-bean-definition-overriding: true  # 빈 오버라이딩을 허용하는 방법이지만, 위의 통합 방식을 추천합니다
+    allow-bean-definition-overriding: true
 
   security:
     oauth2:
@@ -31,33 +27,21 @@ spring:
             scope:
               - user:email
               - read:user
-            redirect-uri: https://r2-web-flux-8a261ca95b28.herokuapp.com/login/oauth2/code/github
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           github:
             authorization-uri: https://github.com/login/oauth/authorize
             token-uri: https://github.com/login/oauth/access_token
             user-info-uri: https://api.github.com/user
 
-# OpenAPI (Swagger) Configuration
 springdoc:
-  api-docs:
-    enabled: true
-    path: /v3/api-docs
   swagger-ui:
-    enabled: true
     path: /swagger-ui.html
     disable-swagger-default-url: true
-    url: /v3/api-docs
-    theme: material  # 현대적인 Material 테마 사용
-    doc-expansion: list  # 문서를 list 형태로 표시
-    default-models-expand-depth: 1
-    syntax-highlight:
-      theme: nord  # 현대적인 Nord 테마의 코드 하이라이팅
-    filter: true  # 검색 필터 활성화
-    operations-sorter: alpha  # 알파벳 순 정렬
-    tags-sorter: alpha  # 태그 알파벳 순 정렬
-    display-operation-id: false
-    default-model-rendering: model
+    theme: material
+    doc-expansion: list
+    operations-sorter: alpha
+    tags-sorter: alpha
 
 logging:
   pattern:
@@ -65,18 +49,14 @@ logging:
   level:
     root: INFO
     com.gomin.r2webflux: DEBUG
-    org.springframework:
-      jpa: DEBUG
-      data.redis: DEBUG
-    org.hibernate.SQL: DEBUG
     org.springframework.r2dbc: DEBUG
-    io.r2dbc.postgresql: DEBUG
     io.r2dbc.postgresql.QUERY: DEBUG
-    io.r2dbc.postgresql.PARAM: DEBUG
 
 server:
-  port: ${PORT:8080}  # Use PORT environment variable, fallback to 8080 if not set
+  port: ${PORT:8080}
+  forward-headers-strategy: native
+  base-url: https://r2-web-flux-8a261ca95b28.herokuapp.com
 
 jwt:
   secret: ${JWT_SECRET_KEY:your_jwt_secret_key_must_be_at_least_32_bytes_long}
-  expiration: ${JWT_EXPIRATION:86400000}  # 24hours, 기본값 추가
+  expiration: ${JWT_EXPIRATION:86400000}
