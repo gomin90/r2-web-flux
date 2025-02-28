@@ -67,10 +67,10 @@ public class AccountController {
             const eventSource = new EventSource('/api/v1/accounts/sfid/' + sfid);  // 템플릿 리터럴 대신 문자열 연결 사용
             
             eventSource.addEventListener('STARTED', (event) => {
-                const data = JSON.parse(event.data);
+                const data = JSON.parse(event.data);tjelsjltjlstjlsj
                 console.log('Update started:', data);
             });
-            // ...existing code...
+            // ...existing code...        
             ```
             // ...existing code...
             """, responses = {
